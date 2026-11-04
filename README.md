@@ -24,7 +24,7 @@ The model answers two questions about the stand's feed system:
 ```
 GOX:       O-REG → O-TUBE-1 → OMV → O-TUBE-2 → O-INJ (choked) ─┐
                                                                ├→ Chamber → throat
-Kerosene:  Tank (PR-REG) → F-TUBE-1 → FMV → F-TUBE-2 → F-ORF → F-INJ ─┘
+Kerosene:  Tank (PR-REG) → F-TUBE-1 → FMV → F-TUBE-2 → F-INJ ────────┘
 ```
 
 Both legs share one chamber pressure node, closed by
