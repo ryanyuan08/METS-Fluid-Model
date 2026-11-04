@@ -39,7 +39,7 @@ so a change on one leg shifts Pc and therefore the flow on the other leg.
 
 Built on [FullFlow](https://pypi.org/project/fullflow/) (network solver) and ThermoProp (CoolProp properties).
 
-- **Tubes:** each run of 1/4" × 0.035" SS tube is a Darcy–Weisbach pipe with the friction factor from Colebrook. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
+- **Tubes:** each run of 1/4" × 0.035" SS tube is a Darcy–Weisbach pipe with the friction factor from Churchill. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
 - **Valves and orifices:** valve Cv and fitting K values are converted to an effective CdA. Gas restrictions use FullFlow's `CompressibleOrifice` (which handles choking); liquid restrictions use `DischargeCoefficient`.
 - **Fluids:** GOX is an ideal gas whose density updates with local pressure; kerosene has constant density and viscosity.
 - **Continuity:** each internal node has a mass balance (flow in = flow out), and the chamber balance couples the legs.
