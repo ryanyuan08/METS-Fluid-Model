@@ -48,11 +48,25 @@ Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2 → F-INJ ──�
 O-PV is stand hardware; T-OV is the torch oxygen valve (part of the test article). FMV doubles as the torch fuel solenoid.
 The Elytra chamber closure uses c*/A_t anchored at the design point (Pc 265 psia at 14.6 g/s), so no throat diameter is needed.
 
-**Code layout:** each Elytra / LOX function sits directly after its Hopper / GOX twin and follows the same steps
-(`make_hopper_torch` → `make_elytra_torch`, `build_gox_leg` / `build_fuel_leg` → `build_lox_leg`,
-`build_mets_system` → `build_elytra_system`, `find_regulator_setpoints` → `elytra_find_setpoints`, `predict` → `elytra_predict`, ...).
-All stand hardware, GOX, kerosene and LOX, lives in one `STAND` dict. The two main cells run the same steps
-(targets → design → self-check → prediction → sweeps), and every plot is drawn in the final VISUALIZATION cell.
+**Code layout and naming:** every function a test article has gets the article's name, `hopper_torch` or
+`elytra_torch` (not just `elytra`, so the Elytra gas generator can follow as `elytra_gg`). Each Elytra function sits
+directly after its Hopper twin and follows the same steps:
+
+| Hopper torch | Elytra torch |
+|---|---|
+| `make_hopper_torch`, `print_hopper_torch_test_article` | `make_elytra_torch`, `print_elytra_torch_test_article` |
+| `build_hopper_torch` (GOX + kerosene legs) | `build_elytra_torch` (LOX + kerosene legs) |
+| `hopper_torch_results` | `elytra_torch_results` |
+| `find_hopper_torch_setpoints` | `find_elytra_torch_setpoints` |
+| `hopper_torch_predict` | `elytra_torch_predict` |
+| `print_hopper_torch_summary`, `check_hopper_torch_limits` | `print_elytra_torch_summary`, `check_elytra_torch_limits` |
+
+Stand hardware and shared machinery keep generic names: `STAND` (GOX, kerosene and LOX hardware in one dict),
+`build_gox_leg` / `build_fuel_leg` / `build_lox_leg` (all written the same way: tubes, valves, injector, one node
+`Balance` each), `solve`, `snapshot`, `apply_warm_start`, `sweep_regulator` (takes the article's predict function)
+and the plot functions. Both test articles are solved the same way: one FullFlow network, every node pressure and
+mass flow solved at once by `SteadyState(net).solve()`. The two main cells run the same steps (targets → design →
+self-check → prediction → sweeps), and every plot is drawn in the final VISUALIZATION cell.
 
 **LOX leg inputs** come from the *METS LOX Feed System Design* pressure ladder (lengths, K, Cv 0.04 for O-PV and T-OV),
 modeled with the real 0.18" ID tube, tank head adding pressure at the bottom outlet, and the ladder's 0.3 m elevation
