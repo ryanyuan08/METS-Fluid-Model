@@ -48,6 +48,12 @@ Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2 → F-INJ ──�
 O-PV is stand hardware; T-OV is the torch oxygen valve (part of the test article). FMV doubles as the torch fuel solenoid.
 The Elytra chamber closure uses c*/A_t anchored at the design point (Pc 265 psia at 14.6 g/s), so no throat diameter is needed.
 
+**Code layout:** each Elytra / LOX function sits directly after its Hopper / GOX twin and follows the same steps
+(`make_hopper_torch` → `make_elytra_torch`, `build_gox_leg` / `build_fuel_leg` → `build_lox_leg`,
+`build_mets_system` → `build_elytra_system`, `find_regulator_setpoints` → `elytra_find_setpoints`, `predict` → `elytra_predict`, ...).
+All stand hardware, GOX, kerosene and LOX, lives in one `STAND` dict. The two main cells run the same steps
+(targets → design → self-check → prediction → sweeps), and every plot is drawn in the final VISUALIZATION cell.
+
 **LOX leg inputs** come from the *METS LOX Feed System Design* pressure ladder (lengths, K, Cv 0.04 for O-PV and T-OV),
 modeled with the real 0.18" ID tube, tank head adding pressure at the bottom outlet, and the ladder's 0.3 m elevation
 change applied as a drop to the torch. Before this was committed, the FullFlow LOX leg was checked against that
