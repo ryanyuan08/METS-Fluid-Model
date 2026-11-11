@@ -14,8 +14,10 @@ The model answers two questions about the stand's feed system:
 | Oxidizer | GOX from a 2000 psia bottle through O-REG |
 | Fuel | Kerosene / RP-1, tank pressurized with GN2 through PR-REG |
 | Test article | Hopper torch (MR 1.8, 19.29 / 10.71 g/s ox / fuel, Pc 200 psia, 0.1952" throat) |
+| LOX leg (added) | LOX tank pressurized with GN2 through PR-REG-2, validated against the *METS LOX Feed System Design* pressure ladder |
+| Test article (added) | Elytra torch igniter, LOX / kerosene (MR 1.81, 9.4 / 5.2 g/s, Pc 265 psia, one O-F-O triplet) |
 | Analysis | Steady state only |
-| Not yet modeled | GN2 pressurant flow losses, LOX leg, transients |
+| Not yet modeled | GN2 pressurant flow losses, LOX cavitating venturi (gas gen), transients |
 
 `fluid_model_OLD.ipynb` is the original GOX / propane version from the METS CoDR (Pc 50 psia, MR 2.2), kept for reference.
 
@@ -34,6 +36,23 @@ Pc = (mdot_ox + mdot_fuel) · c* / A_throat
 ```
 
 so a change on one leg shifts Pc and therefore the flow on the other leg.
+
+For the Elytra torch the GOX leg is replaced by the LOX leg (venturi left out; it returns for the gas generator):
+
+```
+LOX:       Tank (PR-REG-2) → C-TUBE-1 → O-PV → C-TUBE-2 → T-OV → C-TUBE-3 → O-INJ (liquid) ─┐
+                                                                                         ├→ Chamber → throat
+Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2 → F-INJ ───────────────────────────┘
+```
+
+O-PV is stand hardware; T-OV is the torch oxygen valve (part of the test article). FMV doubles as the torch fuel solenoid.
+The Elytra chamber closure uses c*/A_t anchored at the design point (Pc 265 psia at 14.6 g/s), so no throat diameter is needed.
+
+**LOX ladder validation:** `validate_lox_ladder()` rebuilds the CSV pressure ladder row by row with the CSV's own inputs
+(ID = 0.25", eps/D ≈ 0.005, its lengths, K and Cv) between its boundaries (336.58 psia ullage → 312.00 psia injector inlet).
+The model reproduces every node to within 0.002 psi and the 9.4 g/s mass flow to 0.06% (`lox_ladder_validation.png`).
+The Elytra solves then use the stand LOX leg: real 0.18" ID tube, tank head adding pressure at the bottom outlet, and the
+CSV's 0.3 m elevation change applied as a drop to the torch.
 
 ## How it works
 
@@ -54,6 +73,7 @@ Built on [FullFlow](https://pypi.org/project/fullflow/) (network solver) and The
 - Prediction at rounded, real-world setpoints
 - Regulator sweeps (mdot and MR vs. setpoint for each leg)
 - Pressure ladder plot of every node on both legs
+- Elytra: LOX ladder validation vs the CSV, required PR-REG-2 / PR-REG-1 setpoints, prediction, sweeps and ladder (`lox_ladder_validation.png`, `elytra_regulator_sweep.png`, `elytra_pressure_ladder.png`)
 
 ## Inputs and placeholders
 
@@ -70,5 +90,5 @@ Run all cells; plots are saved as `pressure_ladder.png` and `regulator_sweep.png
 
 ## Planned
 
-- LOX leg with a cavitating venturi for LOX-fed test articles (Elytra torch, Elytra gas generator)
+- Cavitating venturi on the LOX leg for the Elytra gas generator (LOX leg and Elytra torch are done)
 - Calibrating placeholders against hot-fire and cold-flow data
