@@ -16,6 +16,7 @@ The model answers two questions about the stand's feed system:
 | Test article | Hopper torch (MR 1.8, 19.29 / 10.71 g/s ox / fuel, Pc 200 psia, 0.1952" throat) |
 | LOX leg (added) | LOX tank pressurized with GN2 through PR-REG-2, built from the *METS LOX Feed System Design* pressure ladder |
 | Test article (added) | Elytra torch igniter, LOX / kerosene (MR 1.81, 9.4 / 5.2 g/s, Pc 265 psia, one O-F-O triplet) |
+| Test article (added) | Elytra gas generator, LOX / kerosene (MR 0.6, 37.5 / 62.5 g/s), modeled up to its 100 psia injector inlet |
 | Analysis | Steady state only |
 | Not yet modeled | GN2 pressurant flow losses, LOX cavitating venturi (gas gen), transients |
 
@@ -48,20 +49,30 @@ Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2 → F-INJ ──�
 T-OV, the torch oxygen valve (part of the test article), is the only LOX valve for the torch. O-PV is stand hardware used for
 the gas generator only; `build_lox_leg` puts it in the line when the test article sets `uses_opv` (False for the torch).
 FMV doubles as the torch fuel solenoid.
+
+For the Elytra gas generator the model stops at the GG injector inlet (100 psia on both legs); the GG itself handles the rest:
+
+```
+LOX:       Tank (PR-REG-2) → C-TUBE-1 → O-PV → C-TUBE-2 → C-TUBE-3 → GG injector inlet (100 psia, fixed)
+Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2            → GG injector inlet (100 psia, fixed)
+```
+
+O-PV is the Gems D-series cryo solenoid (Cv 0.04) and there is no T-OV. With no chamber balance the two legs are independent.
+The cavitating venturi will be added to the LOX leg later.
 The Elytra chamber closure uses c*/A_t anchored at the design point (Pc 265 psia at 14.6 g/s), so no throat diameter is needed.
 
 **Code layout and naming:** every function a test article has gets the article's name, `hopper_torch` or
-`elytra_torch` (not just `elytra`, so the Elytra gas generator can follow as `elytra_gg`). Each Elytra function sits
+`elytra_torch` or `elytra_gg` (not just `elytra`, since both are on the Elytra vehicle). Each Elytra function sits
 directly after its Hopper twin and follows the same steps:
 
-| Hopper torch | Elytra torch |
-|---|---|
-| `make_hopper_torch`, `print_hopper_torch_test_article` | `make_elytra_torch`, `print_elytra_torch_test_article` |
-| `build_hopper_torch` (GOX + kerosene legs) | `build_elytra_torch` (LOX + kerosene legs) |
-| `hopper_torch_results` | `elytra_torch_results` |
-| `find_hopper_torch_setpoints` | `find_elytra_torch_setpoints` |
-| `hopper_torch_predict` | `elytra_torch_predict` |
-| `print_hopper_torch_summary`, `check_hopper_torch_limits` | `print_elytra_torch_summary`, `check_elytra_torch_limits` |
+| Hopper torch | Elytra torch | Elytra GG |
+|---|---|---|
+| `make_hopper_torch`, `print_hopper_torch_test_article` | `make_elytra_torch`, `print_elytra_torch_test_article` | `make_elytra_gg`, `print_elytra_gg_test_article` |
+| `build_hopper_torch` (GOX + kerosene legs) | `build_elytra_torch` (LOX + kerosene legs) | `build_elytra_gg` (LOX + kerosene legs, end at injector inlet) |
+| `hopper_torch_results` | `elytra_torch_results` | `elytra_gg_results` |
+| `find_hopper_torch_setpoints` | `find_elytra_torch_setpoints` | `find_elytra_gg_setpoints` |
+| `hopper_torch_predict` | `elytra_torch_predict` | `elytra_gg_predict` |
+| `print_hopper_torch_summary`, `check_hopper_torch_limits` | `print_elytra_torch_summary`, `check_elytra_torch_limits` | `print_elytra_gg_summary`, `check_elytra_gg_limits` |
 
 Stand hardware and shared machinery keep generic names: `STAND` (GOX, kerosene and LOX hardware in one dict),
 `build_gox_leg` / `build_fuel_leg` / `build_lox_leg` (all written the same way: tubes, valves, injector, one node
