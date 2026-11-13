@@ -40,12 +40,14 @@ so a change on one leg shifts Pc and therefore the flow on the other leg.
 For the Elytra torch the GOX leg is replaced by the LOX leg (venturi left out; it returns for the gas generator):
 
 ```
-LOX:       Tank (PR-REG-2) → C-TUBE-1 → O-PV → C-TUBE-2 → T-OV → C-TUBE-3 → O-INJ (liquid) ─┐
+LOX:       Tank (PR-REG-2) → C-TUBE-1 → C-TUBE-2 → T-OV → C-TUBE-3 → O-INJ (liquid) ───────┐
                                                                                          ├→ Chamber → throat
 Kerosene:  Tank (PR-REG-1) → F-TUBE-1 → FMV  → F-TUBE-2 → F-INJ ───────────────────────────┘
 ```
 
-O-PV is stand hardware; T-OV is the torch oxygen valve (part of the test article). FMV doubles as the torch fuel solenoid.
+T-OV, the torch oxygen valve (part of the test article), is the only LOX valve for the torch. O-PV is stand hardware used for
+the gas generator only; `build_lox_leg` puts it in the line when the test article sets `uses_opv` (False for the torch).
+FMV doubles as the torch fuel solenoid.
 The Elytra chamber closure uses c*/A_t anchored at the design point (Pc 265 psia at 14.6 g/s), so no throat diameter is needed.
 
 **Code layout and naming:** every function a test article has gets the article's name, `hopper_torch` or
@@ -68,7 +70,7 @@ and the plot functions. Both test articles are solved the same way: one FullFlow
 mass flow solved at once by `SteadyState(net).solve()`. The two main cells run the same steps (targets → design →
 self-check → prediction → sweeps), and every plot is drawn in the final VISUALIZATION cell.
 
-**LOX leg inputs** come from the *METS LOX Feed System Design* pressure ladder (lengths, K, Cv 0.04 for O-PV and T-OV),
+**LOX leg inputs** come from the *METS LOX Feed System Design* pressure ladder (lengths, K, Cv 0.04 for T-OV),
 modeled with the real 0.18" ID tube, tank head adding pressure at the bottom outlet, and the ladder's 0.3 m elevation
 change applied as a drop to the torch. Before this was committed, the FullFlow LOX leg was checked against that
 spreadsheet with its own inputs and matched every row to within 0.002 psi.
