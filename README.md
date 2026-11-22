@@ -11,7 +11,7 @@ The model answers two questions about the stand's feed system:
 
 | | Current (`fluid_model_NEW.ipynb`) |
 |---|---|
-| Oxidizer | GOX from a 2000 psia bottle through O-REG |
+| Oxidizer | GOX from a 2000 psia bottle through O-REG, 3/8" × 0.035" tube (keeps line velocity under the CGA G-4.4 / EIGA Doc 13 impingement curve) |
 | Fuel | Kerosene / RP-1, tank pressurized with GN2 through PR-REG |
 | Test article | Hopper torch (MR 1.8, 19.29 / 10.71 g/s ox / fuel, Pc 200 psia, 0.1952" throat) |
 | LOX leg (added) | LOX tank pressurized with GN2 through PR-REG-2, built from the *METS LOX Feed System Design* pressure ladder |
@@ -66,7 +66,7 @@ directly after its Hopper twin and follows the same steps:
 Stand hardware and shared machinery keep generic names: `STAND` (GOX, kerosene and LOX hardware in one dict),
 `build_gox_leg` / `build_fuel_leg` / `build_lox_leg` (all written the same way: tubes, valves, injector, one node
 `Balance` each), `solve`, `snapshot`, `apply_warm_start`, `sweep_regulator` (takes the article's predict function)
-and the plot functions. Both test articles are solved the same way: one FullFlow network, every node pressure and
+and the plot functions (`plot_pressure_ladder`, `plot_flow_velocity`, `plot_regulator_sweep`). Both test articles are solved the same way: one FullFlow network, every node pressure and
 mass flow solved at once by `SteadyState(net).solve()`. The two main cells run the same steps (targets → design →
 self-check → prediction → sweeps), and every plot is drawn in the final VISUALIZATION cell.
 
@@ -79,7 +79,7 @@ spreadsheet with its own inputs and matched every row to within 0.002 psi.
 
 Built on [FullFlow](https://pypi.org/project/fullflow/) (network solver) and ThermoProp (CoolProp properties).
 
-- **Tubes:** each run of 1/4" × 0.035" SS tube is a Darcy–Weisbach pipe with the friction factor from Churchill. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
+- **Tubes:** each run of SS tube (1/4" × 0.035" for kerosene and LOX, 3/8" × 0.035" for GOX) is a Darcy–Weisbach pipe with the friction factor from Churchill. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
 - **Valves and orifices:** valve Cv and fitting K values are converted to an effective CdA. Gas restrictions use FullFlow's `CompressibleOrifice` (which handles choking); liquid restrictions use `DischargeCoefficient`.
 - **Fluids:** GOX is an ideal gas whose density updates with local pressure; kerosene has constant density and viscosity.
 - **Continuity:** each internal node has a mass balance (flow in = flow out), and the chamber balance couples the legs.
@@ -94,7 +94,8 @@ Built on [FullFlow](https://pypi.org/project/fullflow/) (network solver) and The
 - Prediction at rounded, real-world setpoints
 - Regulator sweeps (mdot and MR vs. setpoint for each leg)
 - Pressure ladder plot of every node on both legs
-- Elytra: required PR-REG-2 / PR-REG-1 setpoints, prediction, sweeps and ladder (`elytra_regulator_sweep.png`, `elytra_pressure_ladder.png`)
+- Flow velocity plot (`plot_flow_velocity`): bar chart like the pressure ladder, with the velocity at every node and through every tube, valve and injector on both legs. Valve / injector bars show the jet velocity through the effective CdA (isentropic throat velocity and Mach number for GOX). One function serves every test article and leg
+- Elytra: required PR-REG-2 / PR-REG-1 setpoints, prediction, sweeps, ladder and flow velocity (`elytra_regulator_sweep.png`, `elytra_pressure_ladder.png`, `elytra_flow_velocity.png`)
 
 ## Inputs and placeholders
 
@@ -107,7 +108,7 @@ pip install fullflow thermoprop numpy matplotlib
 jupyter notebook fluid_model_NEW.ipynb
 ```
 
-Run all cells; plots are saved as `pressure_ladder.png` and `regulator_sweep.png` in the working directory.
+Run all cells; plots are saved as `pressure_ladder.png`, `flow_velocity.png` and `regulator_sweep.png` in the working directory.
 
 ## Planned
 
