@@ -11,7 +11,7 @@ The model answers two questions about the stand's feed system:
 
 | | Current (`fluid_model_NEW.ipynb`) |
 |---|---|
-| Oxidizer | GOX from a 2000 psia bottle through O-REG |
+| Oxidizer | GOX from a 2000 psia bottle through O-REG, 3/8" × 0.035" tube (keeps line velocity under the CGA G-4.4 / EIGA Doc 13 impingement curve) |
 | Fuel | Kerosene / RP-1, tank pressurized with GN2 through PR-REG |
 | Test article | Hopper torch (MR 1.8, 19.29 / 10.71 g/s ox / fuel, Pc 200 psia, 0.1952" throat) |
 | LOX leg (added) | LOX tank pressurized with GN2 through PR-REG-2, built from the *METS LOX Feed System Design* pressure ladder |
@@ -79,7 +79,7 @@ spreadsheet with its own inputs and matched every row to within 0.002 psi.
 
 Built on [FullFlow](https://pypi.org/project/fullflow/) (network solver) and ThermoProp (CoolProp properties).
 
-- **Tubes:** each run of 1/4" × 0.035" SS tube is a Darcy–Weisbach pipe with the friction factor from Churchill. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
+- **Tubes:** each run of SS tube (1/4" × 0.035" for kerosene and LOX, 3/8" × 0.035" for GOX) is a Darcy–Weisbach pipe with the friction factor from Churchill. Bends, tees, and unions are folded in as an equivalent length, `L_eq = L + ΣK · D / f`, with height change included.
 - **Valves and orifices:** valve Cv and fitting K values are converted to an effective CdA. Gas restrictions use FullFlow's `CompressibleOrifice` (which handles choking); liquid restrictions use `DischargeCoefficient`.
 - **Fluids:** GOX is an ideal gas whose density updates with local pressure; kerosene has constant density and viscosity.
 - **Continuity:** each internal node has a mass balance (flow in = flow out), and the chamber balance couples the legs.
